@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcoÁrbol · Propagación de especies con árboles</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="globeGrad" cx="35%" cy="30%" r="75%">
+        <stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="#7fe0ff"/><stop offset="1" stop-color="#0a7cd6"/>
+      </radialGradient>
+      <radialGradient id="heroGlobe" cx="35%" cy="28%" r="80%">
+        <stop offset="0" stop-color="#ffffff"/><stop offset="0.3" stop-color="#a8ecff"/><stop offset="1" stop-color="#1287d8"/>
+      </radialGradient>
+      <linearGradient id="heroGloss" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="sky" aria-hidden="true">
+    <span class="bubble b1"></span><span class="bubble b2"></span><span class="bubble b3"></span>
+    <span class="bubble b4"></span><span class="bubble b5"></span><span class="bubble b6"></span>
+  </div>
+
+  <div class="app">
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="20" fill="url(#globeGrad)" stroke="#fff" stroke-width="2"/>
+          <path d="M24 34V20M24 24l-6-6M24 22l6-6M18 18l-3 0M30 16l3-1" stroke="#1d7a2f" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+          <circle cx="15" cy="18" r="3" fill="#7ed957"/><circle cx="33" cy="15" r="3" fill="#7ed957"/>
+          <circle cx="24" cy="18" r="3.4" fill="#ffd21f"/>
+        </svg>
+        <div>
+          <strong>EcoÁrbol</strong>
+          <small>Árboles n-arios</small>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Secciones">
+        <button class="nav-item active" data-view="case">
+          <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+          <span>Caso de estudio</span>
+        </button>
+        <button class="nav-item" data-view="sim">
+          <svg viewBox="0 0 24 24"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7z"/><path d="M12 8v8M8.5 10l7 4"/></svg>
+          <span>Simulación</span>
+        </button>
+        <button class="nav-item" data-view="species">
+          <svg viewBox="0 0 24 24"><path d="M5 19c0-8 6-14 15-14-1 9-7 15-15 14z"/><path d="M5 19l8-8"/></svg>
+          <span>Especies</span>
+        </button>
+        <button class="nav-item" data-view="tree">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="12" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7v9.5M12 10l-7 6.5M12 10l7 6.5"/></svg>
+          <span>Árbol</span>
+        </button>
+        <button class="nav-item" data-view="stats">
+          <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          <span>Estadísticas</span>
+        </button>
+        <button class="nav-item" data-view="guide">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.5"/></svg>
+          <span>Guía</span>
+        </button>
+      </nav>
+
+      <p class="sidebar-foot">Taller de Estructuras de Datos<br>Árboles · Python + Frontend</p>
+    </aside>
+
+    <!-- ===================== MAIN ===================== -->
+    <main class="main">
+      <header class="topbar glass">
+        <form id="search-form" class="search" title="Escribe el número de un organismo para abrirlo en el explorador del árbol">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input id="search-input" type="search" inputmode="numeric" placeholder="Buscar organismo por su número (ej. 125)" aria-label="Buscar organismo por número">
+          <button type="submit" class="btn small">Buscar</button>
+        </form>
+
+        <div class="run-controls" aria-label="Control del tiempo">
+          <div class="step-chip" title="Pasos de tiempo simulados. En cada paso los organismos envejecen, se reproducen y compiten.">
+            <span>Paso</span><strong id="step-count">0</strong>
+          </div>
+          <button id="btn-step" class="btn" title="Avanza un paso de tiempo">+1</button>
+          <button id="btn-step10" class="btn" title="Avanza diez pasos de una vez">+10</button>
+          <button id="btn-play" class="btn primary" title="Avanza la simulación automáticamente hasta que pauses">▶ Reproducir</button>
+          <label class="speed" title="Qué tan rápido avanza la simulación al reproducir">
+            <span>Velocidad</span>
+            <select id="play-speed">
+              <option value="600">Lenta</option>
+              <option value="250" selected>Normal</option>
+              <option value="60">Rápida</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <!-- ============ VIEW: CASO DE ESTUDIO ============ -->
+      <section id="view-case" class="view active" aria-labelledby="case-title">
+        <article class="hero glass-hero">
+          <div class="hero-text">
+            <span class="eyebrow">Caso de estudio · Estructuras de datos: árboles n-arios</span>
+            <h1 id="case-title">¿Quién propagó a quién? Rastreando especies invasoras con árboles</h1>
+            <p>Las especies invasoras son una de las mayores amenazas para los ecosistemas altoandinos: una sola
+              planta que llega a un lugar nuevo puede, en pocas generaciones, cubrir praderas, lagunas y bosques.
+              <strong>EcoÁrbol</strong> simula esa invasión y guarda la genealogía de cada especie en un
+              <strong>árbol n-ario</strong>, para saber de qué organismo desciende cada planta, cuántas generaciones
+              lleva la invasión y qué linaje conviene eliminar para controlarla.</p>
+            <div class="hero-actions">
+              <button class="btn primary big" data-goto="species">Elegir especies</button>
+              <button class="btn big" data-goto="sim">Ir a la simulación</button>
+            </div>
+          </div>
+          <svg class="hero-art" viewBox="0 0 260 220" aria-hidden="true">
+            <circle cx="130" cy="110" r="96" fill="url(#heroGlobe)" stroke="#fff" stroke-width="3"/>
+            <g stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".95">
+              <line x1="130" y1="58" x2="88" y2="108"/><line x1="130" y1="58" x2="130" y2="108"/><line x1="130" y1="58" x2="172" y2="108"/>
+              <line x1="88" y1="108" x2="68" y2="158"/><line x1="88" y1="108" x2="104" y2="158"/>
+              <line x1="172" y1="108" x2="156" y2="158"/><line x1="172" y1="108" x2="192" y2="158"/>
+            </g>
+            <circle cx="130" cy="58" r="14" fill="#ffc928" stroke="#fff" stroke-width="3"/>
+            <circle cx="88" cy="108" r="12" fill="#a9d4ff" stroke="#fff" stroke-width="3"/>
+            <circle cx="130" cy="108" r="12" fill="#8ee06a" stroke="#fff" stroke-width="3"/>
+            <circle cx="172" cy="108" r="12" fill="#a9d4ff" stroke="#fff" stroke-width="3"/>
+            <circle cx="68" cy="158" r="10" fill="#8ee06a" stroke="#fff" stroke-width="3"/>
+            <circle cx="104" cy="158" r="10" fill="#8ee06a" stroke="#fff" stroke-width="3"/>
+            <circle cx="156" cy="158" r="10" fill="#8ee06a" stroke="#fff" stroke-width="3"/>
+            <circle cx="192" cy="158" r="10" fill="#8ee06a" stroke="#fff" stroke-width="3"/>
+            <ellipse cx="112" cy="50" rx="62" ry="30" fill="url(#heroGloss)"/>
+            <circle cx="232" cy="40" r="14" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/>
+            <circle cx="28" cy="190" r="10" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/>
+          </svg>
+        </article>
+
+        <div class="grid-3">
+          <article class="glass card">
+            <h3>El problema</h3>
+            <p>Un equipo ambiental quiere controlar varias especies invasoras que compiten por el mismo territorio,
+              con agua, praderas, bosque y roca. Necesita saber qué tan rápido avanza cada una, hasta dónde llegó,
+              qué individuos fueron los más prolíficos y qué pasa si se elimina un linaje completo o si un incendio
+              arrasa una zona.</p>
+          </article>
+          <article class="glass card">
+            <h3>¿Por qué un árbol?</h3>
+            <p>La propagación es <strong>jerárquica, no lineal</strong>: cada planta suelta semillas que se convierten
+              en varias plantas hijas, y cada una tiene sus propios hijos. Esa relación padre → hijos es un
+              <strong>árbol n-ario</strong>, el mismo tipo de árbol de los árboles genealógicos. Cada especie tiene su
+              propio árbol y su <strong>raíz</strong> es el organismo fundador.</p>
+          </article>
+          <article class="glass card">
+            <h3>La física detrás</h3>
+            <p>Las semillas se mueven por <strong>advección-difusión</strong>: el viento las arrastra en una dirección
+              y además se desplazan al azar (movimiento browniano). Con las aristas del árbol se mide la difusión real
+              y se compara con la velocidad teórica del frente de invasión de <strong>Fisher-KPP</strong>.</p>
+          </article>
+        </div>
+
+        <article class="glass card">
+          <h3>Del concepto de árbol al caso</h3>
+          <p class="desc">Así se traduce cada término de la teoría de árboles a la simulación.</p>
+          <div class="table-wrap">
+            <table class="concept-table">
+              <thead><tr><th>Concepto</th><th>Qué es en un árbol</th><th>Qué significa en EcoÁrbol</th></tr></thead>
+              <tbody>
+                <tr><td><span class="node-dot root"></span>Raíz</td><td>Primer nodo del árbol.</td><td>El organismo fundador de la especie.</td></tr>
+                <tr><td>Nodo</td><td>Cada elemento del árbol.</td><td>Cada organismo que logró establecerse.</td></tr>
+                <tr><td>Padre / Hijo</td><td>Nodo con hijos / nodo que tiene padre.</td><td>La planta que soltó la semilla / la planta que nació de ella.</td></tr>
+                <tr><td>Hermanos</td><td>Nodos con el mismo padre.</td><td>Organismos que nacieron de la misma planta.</td></tr>
+                <tr><td><span class="node-dot branch"></span>Rama</td><td>No es raíz y tiene al menos un hijo.</td><td>Organismo que ya dejó descendencia.</td></tr>
+                <tr><td><span class="node-dot leaf"></span>Hoja</td><td>Nodo sin hijos.</td><td>Organismo sin descendencia (todavía).</td></tr>
+                <tr><td>Nivel</td><td>Distancia a la raíz; la raíz está en el nivel 1.</td><td>La generación del organismo.</td></tr>
+                <tr><td>Altura</td><td>Camino más largo de la raíz a una hoja.</td><td>Cuántas generaciones tiene la invasión.</td></tr>
+                <tr><td>Peso</td><td>Cantidad total de nodos.</td><td>Organismos registrados (vivos y muertos).</td></tr>
+                <tr><td>Orden</td><td>Máximo de hijos que puede tener un nodo.</td><td>Rasgo de la especie: máximo de hijos por organismo.</td></tr>
+                <tr><td>Grado</td><td>Número de hijos de un nodo.</td><td>Cuántos descendientes directos dejó un organismo.</td></tr>
+                <tr><td>Subárbol / poda</td><td>Un nodo con todos sus descendientes.</td><td>Un linaje completo; podarlo es eliminarlo para controlar la especie.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <div class="grid-2">
+          <article class="glass card">
+            <h3>Cómo usar EcoÁrbol</h3>
+            <ol class="steps">
+              <li><strong>Elige las especies.</strong> En <em>Especies</em> activa entre 1 y 8, ajusta sus rasgos si
+                quieres y pulsa <em>Aplicar y reiniciar</em>.</li>
+              <li><strong>Simula.</strong> Usa <em>▶ Reproducir</em>, <em>+1</em> o <em>+10</em> en la barra superior.
+                Cambia el viento o provoca incendios en el mapa.</li>
+              <li><strong>Explora el árbol.</strong> Haz clic en un organismo del mapa (o búscalo por su número) para
+                ver su nivel, sus hermanos, sus hijos y su linaje.</li>
+              <li><strong>Analiza.</strong> En <em>Estadísticas</em> compara las especies y la física de la
+                propagación.</li>
+            </ol>
+          </article>
+          <article class="glass card">
+            <h3>Especies disponibles</h3>
+            <p class="desc">Cada una tiene una estrategia distinta. Haz clic para elegirlas.</p>
+            <div id="case-species" class="species-chips"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: SIMULACIÓN ============ -->
+      <section id="view-sim" class="view" aria-label="Simulación">
+        <div class="sim-grid">
+          <div class="sim-main">
+            <article class="status-hero glass-hero">
+              <div>
+                <span class="eyebrow">Estado del ecosistema</span>
+                <h2 id="hero-title">Todo listo para empezar</h2>
+                <p id="hero-text">Pulsa ▶ Reproducir para que las especies empiecen a propagarse.</p>
+                <div class="hero-meta">
+                  <span id="hero-wind" class="pill-glass"></span>
+                  <span id="hero-seed" class="pill-glass"></span>
+                </div>
+              </div>
+              <svg class="status-art" viewBox="0 0 120 120" aria-hidden="true">
+                <circle cx="60" cy="60" r="50" fill="url(#heroGlobe)" stroke="#fff" stroke-width="3"/>
+                <path d="M60 92V52M60 64l-16-14M60 58l16-16" stroke="#1d7a2f" stroke-width="5" stroke-linecap="round" fill="none"/>
+                <circle cx="42" cy="48" r="8" fill="#7ed957" stroke="#fff" stroke-width="2"/>
+                <circle cx="78" cy="40" r="8" fill="#7ed957" stroke="#fff" stroke-width="2"/>
+                <circle cx="60" cy="48" r="9" fill="#ffd21f" stroke="#fff" stroke-width="2"/>
+                <ellipse cx="50" cy="30" rx="30" ry="14" fill="#fff" opacity=".45"/>
+              </svg>
+            </article>
+
+            <div class="kpi-row">
+              <article class="glass card donut-card">
+                <header>
+                  <h3>Cobertura del mapa</h3>
+                  <p class="desc">Porcentaje de hexágonos ocupados y cuánto aporta cada especie.</p>
+                </header>
+                <div class="donut-wrap">
+                  <canvas id="coverage" width="200" height="200"></canvas>
+                  <div id="coverage-legend" class="legend vertical"></div>
+                </div>
+              </article>
+              <div class="kpi-stack">
+                <article class="glass card kpi">
+                  <h3>Organismos vivos</h3><strong id="kpi-alive">0</strong>
+                  <p class="desc">Nodos vivos sumando todos los árboles.</p>
+                </article>
+                <article class="glass card kpi">
+                  <h3>Peso total</h3><strong id="kpi-weight">0</strong>
+                  <p class="desc">Nodos registrados en todos los árboles, vivos y muertos.</p>
+                </article>
+                <article class="glass card kpi">
+                  <h3>Altura máxima</h3><strong id="kpi-height">0</strong>
+                  <p class="desc">Generaciones del árbol más alto.</p>
+                </article>
+              </div>
+            </div>
+
+            <article class="glass card map-card">
+              <header class="map-head">
+                <div>
+                  <h3>Mapa del ecosistema</h3>
+                  <p class="desc">Cada hexágono es una celda del terreno y cada esfera es un organismo. El hexágono
+                    remarcado indica la <strong>raíz</strong> (fundador) de cada especie.</p>
+                </div>
+                <div class="segmented" role="radiogroup" aria-label="Acción al hacer clic en el mapa">
+                  <button class="seg active" data-tool="inspect" role="radio" aria-checked="true">Inspeccionar</button>
+                  <button class="seg" data-tool="fire" role="radio" aria-checked="false">Incendio</button>
+                </div>
+              </header>
+              <p id="tool-desc" class="tool-desc"></p>
+              <div class="map-frame">
+                <canvas id="map" aria-label="Mapa hexagonal del ecosistema"></canvas>
+              </div>
+              <footer class="map-foot">
+                <div id="terrain-legend" class="legend"></div>
+                <div id="hover-info" class="hover-info">Pasa el cursor sobre el mapa</div>
+              </footer>
+            </article>
+          </div>
+
+          <aside class="sim-side">
+            <article class="glass card">
+              <h3>Especies en el mapa</h3>
+              <p class="desc">El interruptor solo <strong>muestra u oculta</strong> la especie en el mapa; la
+                simulación sigue igual. Para cambiar qué especies se simulan ve a
+                <button class="link" data-goto="species">Especies</button>.</p>
+              <div id="active-species" class="device-grid"></div>
+            </article>
+
+            <article class="glass card">
+              <h3>Viento</h3>
+              <p class="desc">Empuja las semillas en una dirección. Afecta más a las especies con alta
+                sensibilidad al viento (como el diente de león).</p>
+              <div class="wind">
+                <canvas id="compass" width="96" height="96"></canvas>
+                <div class="wind-inputs">
+                  <label>Sopla hacia <span id="wind-direction-value" class="value">0° · Este</span>
+                    <input type="range" id="wind-direction" min="0" max="359" step="1" value="0">
+                  </label>
+                  <label>Velocidad <span id="wind-speed-value" class="value">0.0 celdas/paso</span>
+                    <input type="range" id="wind-speed" min="0" max="3" step="0.1" value="0">
+                  </label>
+                </div>
+              </div>
+            </article>
+
+            <article class="glass card">
+              <h3>Incendio</h3>
+              <p class="desc">Elige <em>Incendio</em> sobre el mapa y haz clic donde quieras quemar: mueren los
+                organismos dentro del radio, pero siguen en su árbol como nodos históricos.</p>
+              <label>Radio <span id="fire-radius-value" class="value">3 celdas</span>
+                <input type="range" id="fire-radius" min="1" max="8" step="1" value="3">
+              </label>
+            </article>
+
+            <article class="glass card">
+              <h3>Población viva</h3>
+              <p class="desc">Organismos vivos de cada especie en el tiempo.</p>
+              <canvas id="spark" class="spark"></canvas>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: ESPECIES ============ -->
+      <section id="view-species" class="view" aria-labelledby="species-title">
+        <article class="glass card view-head">
+          <div>
+            <h2 id="species-title">Elige qué especies simular</h2>
+            <p class="desc">Activa entre <strong>1 y 8</strong> especies; cada una será la raíz de su propio árbol.
+              También puedes ajustar sus rasgos. Los cambios se aplican al pulsar <strong>Aplicar y reiniciar</strong>,
+              que empieza una simulación nueva.</p>
+          </div>
+          <div class="apply-bar">
+            <span id="selection-count" class="count-pill">0 de 8</span>
+            <label class="seed" title="El mismo número de semilla genera el mismo mapa. Déjalo vacío para un mapa al azar.">
+              Semilla del mapa
+              <input id="seed-input" type="number" min="0" step="1" placeholder="al azar">
+            </label>
+            <button id="btn-select-all" class="btn" title="Activa las 8 especies">Todas</button>
+            <button id="btn-defaults" class="btn" title="Vuelve a la selección y los rasgos originales">Restaurar</button>
+            <button id="btn-apply" class="btn primary" title="Empieza una simulación nueva con esta selección">Aplicar y reiniciar</button>
+          </div>
+          <p id="pending-note" class="pending" hidden>Tienes cambios sin aplicar. La simulación actual sigue con la selección anterior.</p>
+        </article>
+        <div id="catalog-grid" class="catalog-grid"></div>
+      </section>
+
+      <!-- ============ VIEW: ÁRBOL ============ -->
+      <section id="view-tree" class="view" aria-label="Árbol de propagación">
+        <div class="tree-grid">
+          <article class="glass card">
+            <h3>El árbol de cada especie</h3>
+            <p class="desc">Elige una especie para ver las medidas de su árbol de propagación.</p>
+            <div id="tree-tabs" class="tabs" role="tablist"></div>
+            <div id="tree-metrics" class="metric-grid"></div>
+            <h4>Peso por nivel</h4>
+            <p class="desc">Cuántos nodos hay en cada nivel (generación). Sumarlos da el peso del árbol.</p>
+            <canvas id="levels-chart" class="levels-chart"></canvas>
+          </article>
+
+          <article class="glass card">
+            <h3>Explorador de nodos</h3>
+            <p class="desc">Muestra un organismo dentro de su árbol: su padre, sus hermanos, sus hijos y sus nietos.
+              Haz clic en cualquier nodo del diagrama para moverte por el árbol.</p>
+            <div id="node-explorer"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: ESTADÍSTICAS ============ -->
+      <section id="view-stats" class="view" aria-label="Estadísticas">
+        <article class="glass card">
+          <h3>Población viva por paso</h3>
+          <p class="desc">Cómo crece, compite o se extingue cada especie a lo largo del tiempo.</p>
+          <canvas id="chart" class="chart"></canvas>
+          <div id="chart-legend" class="legend"></div>
+        </article>
+
+        <article class="glass card">
+          <h3>Comparación de especies</h3>
+          <p class="desc">Medidas del árbol y de la física de la propagación. Pasa el cursor sobre cada encabezado
+            para ver qué significa.</p>
+          <div class="table-wrap"><table id="compare-table" class="compare-table"></table></div>
+        </article>
+
+        <div class="grid-2">
+          <article class="glass card">
+            <h3>Difusión medida con el árbol</h3>
+            <p>Cada arista padre → hijo es un salto de semilla. En el movimiento browniano la varianza del salto en
+              cada eje es 2D, así que con todas las aristas del árbol se estima</p>
+            <p class="formula">D ≈ (σ<sub>x</sub>² + σ<sub>y</sub>²) / 4</p>
+            <p>Usar la varianza (y no el promedio) elimina el arrastre del viento. Si el modelo está bien, el D
+              estimado debe parecerse al D configurado.</p>
+          </article>
+          <article class="glass card">
+            <h3>Frente de invasión</h3>
+            <p>La ecuación de Fisher-KPP predice que una población que crece a tasa r y se difunde con coeficiente D
+              avanza con un frente de velocidad</p>
+            <p class="formula">v = 2 √(r · D)</p>
+            <p>En EcoÁrbol es una <strong>cota superior</strong>: el terreno, la competencia, la muerte y el orden
+              del árbol frenan el avance, así que el frente medido (alcance máximo ÷ pasos) suele ser menor.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: GUÍA ============ -->
+      <section id="view-guide" class="view" aria-label="Guía de funcionalidades">
+        <article class="glass card view-head">
+          <div>
+            <h2>Guía de funcionalidades</h2>
+            <p class="desc">Todo lo que puedes hacer en EcoÁrbol y dónde encontrarlo.</p>
+          </div>
+        </article>
+        <div id="guide-grid" class="guide-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
